@@ -1,7 +1,11 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# This code makes the labels in Times New Roman
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = ['Times New Roman'] + plt.rcParams['font.serif']
 
+# Boxplot code starts here
 df = pd.read_csv("/content/drive/MyDrive/4thyearproject_code/EVALUATION_OUTPUT14/FINAL2_TUMOUR_METRICS.csv")
 fig, axs = plt.subplots(1, 3, figsize=(18, 5))
 
