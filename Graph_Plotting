@@ -2,8 +2,11 @@
 
 import pandas as pd
 import matplotlib.pyplot as plt
+# This code makes the labels in Times New Roman
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = ['Times New Roman'] + plt.rcParams['font.serif']
 
-
+# Graphing code starts here
 data = pd.read_csv("/content/drive/MyDrive/4thyearproject_code/RESULTS/RADAM+DICE/RADAM_DICE_SE_ENCODER.csv")
 
 # Dice Plot
