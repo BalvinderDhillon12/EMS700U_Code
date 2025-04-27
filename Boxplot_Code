@@ -1,0 +1,30 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+df = pd.read_csv("/content/drive/MyDrive/4thyearproject_code/EVALUATION_OUTPUT14/FINAL2_TUMOUR_METRICS.csv")
+fig, axs = plt.subplots(1, 3, figsize=(18, 5))
+
+# Dice plot
+axs[0].boxplot([df["Dice_Whole"], df["Dice_Core"], df["Dice_Enhancing"]])
+axs[0].set_xticklabels(["WT", "TC", "ET"])
+axs[0].set_title("Dice Scores")
+axs[0].set_ylim(0, 1)
+axs[0].set_ylabel("Dice Coefficient")
+
+# Boundary Dice plot 
+axs[2].boxplot([df["Boundary_Dice_Whole"], df["Boundary_Dice_Core"], df["Boundary_Dice_Enhancing"]]) 
+axs[2].set_xticklabels(["WT", "TC", "ET"]) 
+axs[2].set_title("Boundary Dice Scores")
+axs[2].set_ylim(0, 1)
+axs[2].set_ylabel("Dice Coefficient")
+
+# Hausdorff plot
+axs[1].boxplot([df["Hausdorff_Whole"], df["Hausdorff_Core"], df["Hausdorff_Enhancing"]])
+axs[1].set_xticklabels(["WT", "TC", "ET"])
+axs[1].set_ylim(0, 100)
+axs[1].set_title("Hausdorff Distances")
+axs[1].set_ylabel("Distance (mm)")
+
+plt.tight_layout()
+plt.show()
