@@ -166,7 +166,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
 
     avg_val_loss = val_loss / len(val_loader)
     metrics['val_loss'].append(avg_val_loss)
-    print(f"🔍 Val Loss: {avg_val_loss:.4f}")
+    print(f"Val Loss: {avg_val_loss:.4f}")
     scheduler.step(avg_val_loss)
 
     epoch_metrics = compute_all_metrics(all_preds, all_targets)
