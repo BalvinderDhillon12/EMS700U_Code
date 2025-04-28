@@ -254,7 +254,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
 
     avg_val_loss = val_loss / len(val_loader)
     metrics['val_loss'].append(avg_val_loss)
-    print(f"🔍 Val Loss: {avg_val_loss:.4f}")
+    print(f"Val Loss: {avg_val_loss:.4f}")
     scheduler.step(avg_val_loss)
 
     epoch_metrics = compute_all_metrics(all_preds, all_targets)
@@ -264,10 +264,11 @@ for epoch in range(1, NUM_EPOCHS + 1):
         if key != 'specificity':
             metrics[f'{key}_total'].append(epoch_metrics[key]['Total'])
 
-    print(f"🎯 Metrics — DICE: {epoch_metrics['dice']['Total']:.4f}, F1: {epoch_metrics['f1']['Total']:.4f}, Recall: {epoch_metrics['recall']['Total']:.4f}")
+    print(f"Metrics — DICE: {epoch_metrics['dice']['Total']:.4f}, F1: {epoch_metrics['f1']['Total']:.4f}, Recall: {epoch_metrics['recall']['Total']:.4f}")
 
 # Saving the model and metrics
 torch.save(model.state_dict(), os.path.join(output_dir, f"model1_study2_pretrained_final.pth"))
+
 with open(os.path.join(output_dir, "metrics_summary.csv"), "w", newline="") as f:
     writer = csv.writer(f)
     headers = list(metrics.keys())
