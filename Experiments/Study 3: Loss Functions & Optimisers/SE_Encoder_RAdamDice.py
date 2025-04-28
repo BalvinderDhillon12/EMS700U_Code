@@ -268,7 +268,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
     print(f"Metrics — DICE: {epoch_metrics['dice']['Total']:.4f}, F1: {epoch_metrics['f1']['Total']:.4f}, Recall: {epoch_metrics['recall']['Total']:.4f}")
 
 # Saving the model and metrics
-torch.save(model.state_dict(), os.path.join(output_dir, f"model1_study2_pretrained_final.pth"))
+torch.save(model.state_dict(), os.path.join(output_dir, f"model2_study3_final.pth"))
 with open(os.path.join(output_dir, "metrics_summary.csv"), "w", newline="") as f:
     writer = csv.writer(f)
     headers = list(metrics.keys())
