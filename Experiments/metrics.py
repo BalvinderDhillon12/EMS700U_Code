@@ -1,0 +1,75 @@
+import torch
+import numpy as np
+from scipy import ndimage
+from medpy.metric import binary
+
+def compute_dice(pred, target, class_idx):
+    pred_c = (pred == class_idx).float()
+    target_c = (target == class_idx).float()
+    inter = (pred_c * target_c).sum().item()
+    total = pred_c.sum().item() + target_c.sum().item()
+    return 2 * inter / total if total > 0 else 1.0
+
+def compute_precision(pred, target, class_idx):
+    tp = ((pred == class_idx) & (target == class_idx)).sum().item()
+    fp = ((pred == class_idx) & (target != class_idx)).sum().item()
+    return tp / (tp + fp) if (tp + fp) > 0 else 0.0
+
+def compute_recall(pred, target, class_idx):
+    tp = ((pred == class_idx) & (target == class_idx)).sum().item()
+    fn = ((pred != class_idx) & (target == class_idx)).sum().item()
+    return tp / (tp + fn) if (tp + fn) > 0 else 0.0
+
+def compute_specificity(pred, target, class_idx):
+    tn = ((pred != class_idx) & (target != class_idx)).sum().item()
+    fp = ((pred == class_idx) & (target != class_idx)).sum().item()
+    return tn / (tn + fp) if (tn + fp) > 0 else 0.0
+
+def compute_f1(precision, recall):
+    return 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
+
+def compute_boundary_dice(pred, target, class_idx, margin=2):
+    pred_np = (pred == class_idx).cpu().numpy()
+    target_np = (target == class_idx).cpu().numpy()
+
+    if not np.any(pred_np) or not np.any(target_np):
+        return np.nan
+
+    structure = ndimage.generate_binary_structure(3, 1)
+    pred_eroded = ndimage.binary_erosion(pred_np, structure=structure, iterations=margin)
+    target_eroded = ndimage.binary_erosion(target_np, structure=structure, iterations=margin)
+
+    pred_boundary = np.logical_xor(pred_np, pred_eroded)
+    target_boundary = np.logical_xor(target_np, target_eroded)
+    intersection = np.logical_and(pred_boundary, target_boundary).sum()
+    
+    union = pred_boundary.sum() + target_boundary.sum()
+    return 2 * intersection / union if union > 0 else np.nan
+
+def compute_all_metrics(preds, targets):
+    all_metrics = {
+        'dice': {},
+        'precision': {},
+        'recall': {},
+        'f1': {},
+        'specificity': {},
+    }
+    classes = {'WT': 1, 'TC': 2, 'ET': 3}  # label mapping
+
+    preds = torch.cat([p.unsqueeze(0) for p in preds], dim=0)
+    targets = torch.cat([t.unsqueeze(0) for t in targets], dim=0)
+
+    for region, class_idx in classes.items():
+        dsc = compute_dice(preds, targets, class_idx)
+        prec = compute_precision(preds, targets, class_idx)
+        rec = compute_recall(preds, targets, class_idx)
+        f1 = compute_f1(prec, rec)
+        spec = compute_specificity(preds, targets, class_idx)
+
+        all_metrics['dice'][region] = dsc
+        all_metrics['precision'][region] = prec
+        all_metrics['recall'][region] = rec
+        all_metrics['f1'][region] = f1
+        all_metrics['specificity'][region] = spec
+
+    return all_metrics
