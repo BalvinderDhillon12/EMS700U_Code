@@ -22,6 +22,7 @@ from monai.losses import DiceLoss
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
 from torchinfo import summary
+from monai import UNet
 
 from metrics import compute_all_metrics
 
