@@ -1,0 +1,50 @@
+# This is the final code used to plot the graphs based on data in the CSV. 
+
+import pandas as pd
+import matplotlib.pyplot as plt
+# This code makes the labels in Times New Roman
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = ['Times New Roman'] + plt.rcParams['font.serif']
+
+# Graphing code starts here
+data = pd.read_csv("/content/drive/MyDrive/4thyearproject_code/RESULTS/RADAM+DICE/RADAM_DICE_SE_ENCODER.csv")
+
+# Dice Plot
+plt.figure(figsize=(10, 6))
+plt.plot(data["Epoch"], data["WT Dice"], label="WT Dice", linewidth=2)
+plt.plot(data["Epoch"], data["TC Dice"], label="TC Dice", linewidth=2)
+plt.plot(data["Epoch"], data["ET Dice"], label="ET Dice", linewidth=2)
+plt.title("Dice Scores Over Epochs")
+plt.xlabel("Epoch")
+plt.ylabel("Dice")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+# Boundary Dice Plot
+plt.figure(figsize=(10, 6))
+plt.plot(data["Epoch"], data["WT Boundary DICE"], label="WT Boundary Dice", linewidth=2)
+plt.plot(data["Epoch"], data["TC Boundary DICE"], label="TC Boundary Dice", linewidth=2)
+plt.plot(data["Epoch"], data["ET Boundary DICE"], label="ET Boundary Dice", linewidth=2)
+plt.title("Boundary Dice Scores Over Epochs")
+plt.xlabel("Epoch")
+plt.ylabel("Boundary Dice")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+#  Train/Val Loss & Accuracy Plot
+plt.figure(figsize=(10, 6))
+plt.plot(data["Epoch"], data["Train Loss"], label="Train Loss", linestyle='--')
+plt.plot(data["Epoch"], data["Val_Loss"], label="Val Loss", linestyle='--')
+plt.plot(data["Epoch"], data["Train Accuracy"], label="Train Accuracy")
+plt.plot(data["Epoch"], data["Val_Acc"], label="Val Accuracy")
+plt.title("Loss & Accuracy over Epochs")
+plt.xlabel("Epoch")
+plt.ylabel("Metric Value")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
