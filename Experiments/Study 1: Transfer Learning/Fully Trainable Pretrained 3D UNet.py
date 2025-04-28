@@ -176,7 +176,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         if key != 'specificity':
             metrics[f'{key}_total'].append(epoch_metrics[key]['Total'])
 
-    print(f"🎯 Metrics — DICE: {epoch_metrics['dice']['Total']:.4f}, F1: {epoch_metrics['f1']['Total']:.4f}, Recall: {epoch_metrics['recall']['Total']:.4f}")
+    print(f"Metrics — DICE: {epoch_metrics['dice']['Total']:.4f}, F1: {epoch_metrics['f1']['Total']:.4f}, Recall: {epoch_metrics['recall']['Total']:.4f}")
 
 # Saving the model and metrics 
 torch.save(model.state_dict(), os.path.join(output_dir, f"model1_study1_pretrained_final.pth"))
