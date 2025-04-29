@@ -51,8 +51,11 @@ def compute_boundary_dice(pred, target, class_idx, margin=2):
     
     union = pred_boundary.sum() + target_boundary.sum()
     return 2 * intersection / union if union > 0 else np.nan
+
+# This computes the model's confusion between different classes. due to runtime limits, the confusion matrix was calculated seperately 
+# by retraining the model. All the code remains the same as in the studies but instead of computing all the metrics, only the confusion metric 
+# was calculated.
     
-    # this computes the model's confusion between different classes 
 def compute_confusion_matrix (preds,targets): 
     preds_flat = preds.view(-1)
     targets_flat = targets.view(-1)
