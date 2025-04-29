@@ -25,7 +25,7 @@ model_path = "/content/drive/MyDrive/4thyearproject_code/pretrained_models/BESTM
 output_root = "/content/drive/MyDrive/4thyearproject_code/EVALUATION_OUTPUT17"
 os.makedirs(output_root, exist_ok=True)
 
-# defining the model 
+# defining the model, this is similar to the previous codes.
 class SEBlock3D(nn.Module):
     def __init__(self, channels, reduction=16):
         super().__init__()
@@ -72,16 +72,12 @@ class UNetSEEncoder(nn.Module):
         self.pool4 = nn.MaxPool3d(2)
 
         self.bottleneck = ConvBlock(base_channels[3], base_channels[4])
-
         self.up4 = nn.ConvTranspose3d(base_channels[4], base_channels[3], kernel_size=2, stride=2)
         self.dec4 = ConvBlock(base_channels[4], base_channels[3])
-
         self.up3 = nn.ConvTranspose3d(base_channels[3], base_channels[2], kernel_size=2, stride=2)
         self.dec3 = ConvBlock(base_channels[3], base_channels[2])
-
         self.up2 = nn.ConvTranspose3d(base_channels[2], base_channels[1], kernel_size=2, stride=2)
         self.dec2 = ConvBlock(base_channels[2], base_channels[1])
-
         self.up1 = nn.ConvTranspose3d(base_channels[1], base_channels[0], kernel_size=2, stride=2)
         self.dec1 = ConvBlock(base_channels[1], base_channels[0])
 
@@ -103,7 +99,7 @@ model = UNetSEEncoder(in_channels=4, out_channels=4).to("cuda")
 model.load_state_dict(torch.load(model_path, map_location="cuda"))
 model.eval()
 
-# padding to multiples of 16 for suitable with the UNet
+# padding to multiples of 16 to suit the UNet
 def pad_to_multiple(tensor, multiple=16):
     shape = tensor.shape
     if len(shape) == 4:
@@ -126,7 +122,8 @@ def pad_to_multiple(tensor, multiple=16):
 
 # This is essentially the beginning of the Marching Cubes algorithm where it extracts the surfaces then reconstructs them in triangulation.
 # The Laplacian smoothing is also incorporated here with the smooth_iters function.
-
+# this extracts the entire brain surface of the predicted segmentation file and takes into account the subregion segmentation colourations. 
+# would have been better if this was transparent and the actual tumour is visible from the inside too, maybe for the viva
 def extract_surface(segmentation, label, spacing=(1.0, 1.0, 1.0), smooth_iters=30):
     binary = (segmentation == label).astype(np.uint8) if label != 'brain' else segmentation
     if np.sum(binary) == 0:
