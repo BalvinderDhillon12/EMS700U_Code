@@ -1,3 +1,6 @@
+# This code is to compute the metrics for all of the studies. The values are then compiled into a csv file which will 
+# then be used to visualise it. The raw data can be found in one of the folders here or in the link attached in the Appendix.
+
 import torch
 import numpy as np
 from scipy import ndimage
@@ -5,32 +8,33 @@ from medpy.metric import binary
 import seaborn as sns 
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
-def compute_dice(pred, target, class_idx):
+def compute_dice(pred, target, class_idx): # this checks the overlap between ground truth and predicted 
     pred_c = (pred == class_idx).float()
     target_c = (target == class_idx).float()
     inter = (pred_c * target_c).sum().item()
     total = pred_c.sum().item() + target_c.sum().item()
     return 2 * inter / total if total > 0 else 1.0
 
-def compute_precision(pred, target, class_idx):
+def compute_precision(pred, target, class_idx): # this calculates the rate of positive predictions
     tp = ((pred == class_idx) & (target == class_idx)).sum().item()
     fp = ((pred == class_idx) & (target != class_idx)).sum().item()
     return tp / (tp + fp) if (tp + fp) > 0 else 0.0
 
-def compute_recall(pred, target, class_idx):
+def compute_recall(pred, target, class_idx): # this computes all the true positives and false negatives within a class
     tp = ((pred == class_idx) & (target == class_idx)).sum().item()
     fn = ((pred != class_idx) & (target == class_idx)).sum().item()
     return tp / (tp + fn) if (tp + fn) > 0 else 0.0
 
-def compute_specificity(pred, target, class_idx):
+def compute_specificity(pred, target, class_idx): # this computes the rate of negative but true predictions
     tn = ((pred != class_idx) & (target != class_idx)).sum().item()
     fp = ((pred == class_idx) & (target != class_idx)).sum().item()
     return tn / (tn + fp) if (tn + fp) > 0 else 0.0
 
-def compute_f1(precision, recall):
+def compute_f1(precision, recall): # this is used to evaluate the classification of each subregion
     return 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
 
-def compute_boundary_dice(pred, target, class_idx, margin=2):
+# this calculates the overlap of the margins between each subregion 
+def compute_boundary_dice(pred, target, class_idx, margin=2): 
     pred_np = (pred == class_idx).cpu().numpy()
     target_np = (target == class_idx).cpu().numpy()
 
@@ -48,6 +52,7 @@ def compute_boundary_dice(pred, target, class_idx, margin=2):
     union = pred_boundary.sum() + target_boundary.sum()
     return 2 * intersection / union if union > 0 else np.nan
     
+    # this computes the model's confusion between different classes 
 def compute_confusion_matrix (preds,targets): 
     preds_flat = preds.view(-1)
     targets_flat = targets.view(-1)
