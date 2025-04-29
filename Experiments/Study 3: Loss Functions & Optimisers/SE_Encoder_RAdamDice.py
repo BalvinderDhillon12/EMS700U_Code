@@ -17,7 +17,7 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torch.cuda.amp import autocast, GradScaler
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from torch_optimiser import RAdam 
+from torch_optimizer import RAdam 
 
 
 from monai.losses import DiceLoss
@@ -195,7 +195,7 @@ for name, param in model.named_parameters():
         param.requires_grad = False
 
 loss_fn = DiceLoss(to_onehot_y=True, softmax=True)
-optimizer = torch.optim.RAdam(model.parameters(), lr=1e-4, weight_decay=1e-5)
+optimizer = torch.optim.RAdam(model.parameters(), lr=1e-4, weight_decay=1e-5) # the optimiser has been changed to RAdam 
 scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.3, patience=5, verbose=True)
 scaler = GradScaler()
 
