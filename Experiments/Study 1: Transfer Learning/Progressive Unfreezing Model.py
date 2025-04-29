@@ -1,6 +1,8 @@
 !pip install monai
 !pip install torchinfo
 !pip install numpy==1.26.4 --force-reinstall --no-cache-dir
+# If using Google Colab Pro+, you would need to restart the session after this line has run. Then continue running the code.
+
 
 import os
 import numpy as np
@@ -90,7 +92,7 @@ class MultimodalDataset(Dataset):
      else:
           return image_tensor
 
-# Loading Data
+# Loading data
 data_root = "/content/drive/MyDrive/4thyearproject_code/Full_Dataset/Unzipped_File/BraTS2020_TrainingData/MICCAI_BraTS2020_TrainingData"
 all_dirs = sorted(os.listdir(data_root))
 all_dirs = [os.path.join(data_root, d) for d in all_dirs if os.path.isdir(os.path.join(data_root, d))]
@@ -99,7 +101,7 @@ train_dirs, val_dirs = train_test_split(all_dirs, test_size=0.2, random_state=42
 train_loader = DataLoader(MultimodalDataset(train_dirs, include_mask=True), batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
 val_loader = DataLoader(MultimodalDataset(val_dirs, include_mask=True), batch_size=1, shuffle=False, num_workers=NUM_WORKERS)
 
-# Model Setup
+# Model setup
 model = UNet(spatial_dims=3, in_channels=4, out_channels=NUM_CLASSES, channels=(16,32,64,128,256), strides=(2,2,2,2), num_res_units=2, norm ='batch').to(DEVICE)
 pretrained_path = "/content/drive/MyDrive/4thyearproject_code/pretrained_models/model.pt"
 if os.path.exists(pretrained_path):
@@ -110,13 +112,14 @@ if os.path.exists(pretrained_path):
     state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
     model.load_state_dict(state_dict, strict=False)
 
-# Freezing Functions 
-def freeze_encoder_blocks(model, level=4):
+# Freezing function 
+def freeze_encoder_blocks(model, level=4): 
     block_names = [f"down{i}" for i in range(level)]
     for name, param in model.named_parameters():
         if any(block in name for block in block_names):
             param.requires_grad = False
-
+           
+# Unfreezing fucntion
 def unfreeze_encoder_block(model, level):
     block_name = f"down{level}"
     for name, param in model.named_parameters():
@@ -143,7 +146,7 @@ metrics = {
 
 # Training
 for epoch in range(1, NUM_EPOCHS + 1):
-    if epoch in [10, 20, 30, 40]:
+    if epoch in [10, 20, 30, 40]: # the blocks are initially frozen then unfrozen when it reaches these epoch numbers 
         block_level = 4 - ((epoch - 10) // 10)
         unfreeze_encoder_block(model, level=block_level)
 
