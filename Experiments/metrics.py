@@ -2,6 +2,8 @@ import torch
 import numpy as np
 from scipy import ndimage
 from medpy.metric import binary
+import seaborn as sns 
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 def compute_dice(pred, target, class_idx):
     pred_c = (pred == class_idx).float()
@@ -45,6 +47,16 @@ def compute_boundary_dice(pred, target, class_idx, margin=2):
     
     union = pred_boundary.sum() + target_boundary.sum()
     return 2 * intersection / union if union > 0 else np.nan
+    
+def compute_confusion_matrix (preds,targets): 
+    preds_flat = preds.view(-1)
+    targets_flat = targets.view(-1)
+    confusion_matrix = torch.zeros((num_classes, num_classes), dtype=torch.int64)
+
+    for t, p in zip(targets_flat, preds_flat):
+        confusion_matrix[t.long(), p.long()] += 1
+
+    return confusion_matrix
 
 def compute_all_metrics(preds, targets):
     all_metrics = {
@@ -55,10 +67,10 @@ def compute_all_metrics(preds, targets):
         'specificity': {},
     }
     classes = {'WT': 1, 'TC': 2, 'ET': 3}  # label mapping
-
+    
     preds = torch.cat([p.unsqueeze(0) for p in preds], dim=0)
     targets = torch.cat([t.unsqueeze(0) for t in targets], dim=0)
-
+    
     for region, class_idx in classes.items():
         dsc = compute_dice(preds, targets, class_idx)
         prec = compute_precision(preds, targets, class_idx)
@@ -71,5 +83,6 @@ def compute_all_metrics(preds, targets):
         all_metrics['recall'][region] = rec
         all_metrics['f1'][region] = f1
         all_metrics['specificity'][region] = spec
-
-    return all_metrics
+    confusion_matrix = compute_confusion_matrix(preds, targets, num_classes=4)
+    
+    return all_metrics, confusion_matrix 
