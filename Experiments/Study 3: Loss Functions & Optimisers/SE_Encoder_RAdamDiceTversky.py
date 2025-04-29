@@ -56,6 +56,7 @@ def pad_to_multiple(tensor, multiple=16):
   pad_w = (multiple - w % multiple) % multiple
   return F.pad(tensor, (0,pad_w,0,pad_h,0,pad_d), mode= 'constant', value=0)
 
+# combined loss definition
 class CombinedLoss(nn.Module):
     def __init__(self):
         super().__init__()
