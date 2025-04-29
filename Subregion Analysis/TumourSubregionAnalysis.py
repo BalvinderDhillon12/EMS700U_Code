@@ -1,3 +1,4 @@
+# if using google colab pro+, you would need to reinstall these libraries.
 !pip install pyvista 
 !pip install medpy 
 
@@ -12,7 +13,7 @@ from skimage import measure
 from scipy import ndimage
 import pyvista as pv
 import pandas as pd
-
+from monai.networks.nets import UNet
 
 case_ids = [
     "BraTS20_Training_337",
@@ -24,7 +25,7 @@ model_path = "/content/drive/MyDrive/4thyearproject_code/pretrained_models/BESTM
 output_root = "/content/drive/MyDrive/4thyearproject_code/EVALUATION_OUTPUT17"
 os.makedirs(output_root, exist_ok=True)
 
-
+# defining the model 
 class SEBlock3D(nn.Module):
     def __init__(self, channels, reduction=16):
         super().__init__()
@@ -102,6 +103,7 @@ model = UNetSEEncoder(in_channels=4, out_channels=4).to("cuda")
 model.load_state_dict(torch.load(model_path, map_location="cuda"))
 model.eval()
 
+# padding to multiples of 16 for suitable with the UNet
 def pad_to_multiple(tensor, multiple=16):
     shape = tensor.shape
     if len(shape) == 4:
@@ -134,6 +136,7 @@ def extract_surface(segmentation, label, spacing=(1.0, 1.0, 1.0), smooth_iters=3
     mesh = pv.PolyData(verts, faces)
     return mesh.smooth(n_iter=smooth_iters)
 
+# volume is computed 
 def compute_volumes(segmentation, spacing):
     voxel_volume = spacing[0] * spacing[1] * spacing[2] / 1000  
     return {
@@ -142,6 +145,7 @@ def compute_volumes(segmentation, spacing):
         "Vol_Enhancing": np.sum(segmentation == 3) * voxel_volume,
     }
 
+# distance from tumour centroid to cranial margin and the midline is computed
 def compute_distances(segmentation, spacing):
     binary_mask = (segmentation > 0).astype(np.uint8)
     coords = np.argwhere(binary_mask)
@@ -160,6 +164,7 @@ def compute_distances(segmentation, spacing):
         "Cranial_Margin_Dist_mm": cranial_margin_dist_mm,
     }
 
+# dice score per subregion is computed
 def dice_score(pred, gt, region):
     if region == "WT":
         pred_bin = np.isin(pred, [1, 2, 3]).astype(np.uint8)
@@ -180,6 +185,7 @@ def dice_score(pred, gt, region):
     else:
         return binary.dc(pred_bin, gt_bin)
 
+# 95% hausdorff distance per subregion is computed
 def hausdorff(pred, gt, region):
     if region == "WT":
         pred_mask = np.isin(pred, [1, 2, 3])
@@ -198,6 +204,7 @@ def hausdorff(pred, gt, region):
 
     return binary.hd95(pred_mask.astype(np.uint8), gt_mask.astype(np.uint8))
 
+# boundary dice per subregion is calculated. higher margin means higher penalty if it goes out of bounds. 
 def boundary_dice(pred, target, class_idx, margin=4):
     pred_np = (pred == class_idx).astype(np.uint8)
     target_np = (target == class_idx).astype(np.uint8)
@@ -234,7 +241,7 @@ for case_id in case_ids:
     with torch.no_grad():
         pred = torch.argmax(model(img), dim=1).cpu().squeeze().numpy()
 
-# adding flair as a reference point
+# adding flair as a reference point for the images
     ref_nii = nib.load(os.path.join(case_path, f"{case_id}_flair.nii"))
     gt = nib.load(os.path.join(case_path, f"{case_id}_seg.nii")).get_fdata().astype(np.uint8)
     gt[gt == 4] = 3
@@ -266,7 +273,7 @@ for case_id in case_ids:
     summary.append(metrics)
 
 # would be nice if this was interactive
-
+# pyvista is used to plot the masks and also take screenshots of the model in different angles
     plotter = pv.Plotter(off_screen=True)
     plotter.background_color = "white"
 
