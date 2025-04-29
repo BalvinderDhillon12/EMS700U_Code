@@ -1,3 +1,4 @@
+# if using google colab pro+, reinstall these libraries and restart the session
 !pip install monai
 !pip install torchinfo
 !pip install numpy==1.26.4 --force-reinstall --no-cache-dir
@@ -10,19 +11,16 @@ import csv
 import pandas as pd
 import tqdm
 import datetime
-
 import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torch.cuda.amp import autocast, GradScaler
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-
 from monai.networks.nets import UNet
 from monai.losses import DiceLoss
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
 from torchinfo import summary
-
 from metrics import compute_all_metrics
 
 # Reproducibility
