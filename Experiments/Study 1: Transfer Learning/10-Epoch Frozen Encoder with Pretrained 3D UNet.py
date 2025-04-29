@@ -98,7 +98,8 @@ train_dirs, val_dirs = train_test_split(all_dirs, test_size=0.2, random_state=42
 train_loader = DataLoader(MultimodalDataset(train_dirs, include_mask=True), batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
 val_loader = DataLoader(MultimodalDataset(val_dirs, include_mask=True), batch_size=1, shuffle=False, num_workers=NUM_WORKERS)
 
-# Model Setup
+# Model Setup with MONAI's UNET specific to BraTS18 and its specifications. The pretrained model downloaded is attached and checked. 
+
 model = UNet(spatial_dims=3, in_channels=4, out_channels=NUM_CLASSES, channels=(16,32,64,128,256), strides=(2,2,2,2), num_res_units=2, norm ='batch').to(DEVICE)
 pretrained_path = "/content/drive/MyDrive/4thyearproject_code/pretrained_models/model.pt"
 if os.path.exists(pretrained_path):
@@ -109,7 +110,7 @@ if os.path.exists(pretrained_path):
     state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
     model.load_state_dict(state_dict, strict=False)
 
-# Encoder freezing 
+# Encoder freezes 
 for name, param in model.named_parameters():
     if "down" in name:
         param.requires_grad = False
@@ -130,7 +131,8 @@ metrics = {
 }
 
 # Training
-for epoch in range(1, NUM_EPOCHS + 1):
+#the encoder unfreezes at 10 epochs 
+for epoch in range(1, NUM_EPOCHS + 1): 
     if epoch == 10:
         print("\n Unfreezing encoder layers for fine-tuning")
         for name, param in model.named_parameters():
