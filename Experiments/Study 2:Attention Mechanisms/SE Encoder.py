@@ -94,8 +94,9 @@ class MultimodalDataset(Dataset):
 class SEBlock(torch.nn.Module):
       def __init__(self, in_channels, reduction_ratio=16):
           super(SEBlock, self).__init__()
-          self.avg_pool = torch.nn.AdaptiveAvgPool3d(1)
-          self.fc = torch.nn.Sequential(
+          self.avg_pool = torch.nn.AdaptiveAvgPool3d(1) # to reduce the spatial dimensions
+         # to extract channel-wise features 
+          self.fc = torch.nn.Sequential( 
               torch.nn.Linear(in_channels, in_channels // reduction_ratio, bias=False),
               torch.nn.ReLU(inplace=True),
               torch.nn.Linear(in_channels// reduction_ratio, in_channels, bias=False),
@@ -103,9 +104,9 @@ class SEBlock(torch.nn.Module):
           )
 
        def forward(self, x):
-          b, c, _, _, _ = x.size()
-          y = self.avg_pool(x).view(b, c)
-          y = self.fc(y).view(b, c, 1, 1, 1)
+          b, c, _, _, _ = x.size() # squeezing the most relevant features
+          y = self.avg_pool(x).view(b, c) # channel-wise reweighting 
+          y = self.fc(y).view(b, c, 1, 1, 1) # rescaling 
           return x * y.expand_as(x)
 
 class ConvBlock(nn.Module):
@@ -140,31 +141,29 @@ class UNetSEEncoder(nn.Module):
 
         self.up4 = nn.ConvTranspose3d(channels[4], channels[3], kernel_size=2, stride=2)
         self.dec4 = ConvBlock(channels[4], channels[3])
-
         self.up3 = nn.ConvTranspose3d(channels[3], channels[2], kernel_size=2, stride=2)
         self.dec3 = ConvBlock(channels[3], channels[2])
-
         self.up2 = nn.ConvTranspose3d(channels[2], channels[1], kernel_size=2, stride=2)
         self.dec2 = ConvBlock(channels[2], channels[1])
-
         self.up1 = nn.ConvTranspose3d(channels[1],channels[0], kernel_size=2, stride=2)
         self.dec1 = ConvBlock(channels[1], channels[0])
 
         self.final_conv = nn.Conv3d(channels[0], out_channels, kernel_size=1)
 
     def forward(self, x):
+# encoder with SE
             e1 = self.enc1(x)
             e2 = self.enc2(self.pool1(e1))
             e3 = self.enc3(self.pool2(e2))
             e4 = self.enc4(self.pool3(e3))
-
+# bottleneck
             b = self.bottleneck(self.pool4(e4))
-
+# decoder
             d4 = self.dec4(torch.cat([self.up4(b), e4], dim=1))
             d3 = self.dec3(torch.cat([self.up3(d4), e3], dim=1))
             d2 = self.dec2(torch.cat([self.up2(d3), e2], dim=1))
             d1 = self.dec1(torch.cat([self.up1(d2), e1], dim=1))
-
+# final mask output
             return self.final_conv(d1)
 
 
