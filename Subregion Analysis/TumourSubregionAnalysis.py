@@ -122,7 +122,7 @@ def pad_to_multiple(tensor, multiple=16):
 
 # This is essentially the beginning of the Marching Cubes algorithm where it extracts the surfaces then reconstructs them in triangulation.
 # The Laplacian smoothing is also incorporated here with the smooth_iters function.
-# this extracts the entire brain surface of the predicted segmentation file and takes into account the subregion segmentation colourations. 
+# Tis extracts the entire brain surface of the predicted segmentation file and takes into account the subregion segmentation colourations. 
 # would have been better if this was transparent and the actual tumour is visible from the inside too, maybe for the viva
 def extract_surface(segmentation, label, spacing=(1.0, 1.0, 1.0), smooth_iters=30):
     binary = (segmentation == label).astype(np.uint8) if label != 'brain' else segmentation
@@ -201,8 +201,9 @@ def hausdorff(pred, gt, region):
 
     return binary.hd95(pred_mask.astype(np.uint8), gt_mask.astype(np.uint8))
 
-# boundary dice per subregion is calculated. higher margin means higher penalty if it goes out of bounds. 
-def boundary_dice(pred, target, class_idx, margin=4):
+# boundary dice per subregion is calculated. higher margins means there is more erosion of the voxels and it would be a less 
+# precise match. this is because it would then increase the bounds of what is considered a boundary voxel and this might include misalignments. 
+def boundary_dice(pred, target, class_idx, margin=2):
     pred_np = (pred == class_idx).astype(np.uint8)
     target_np = (target == class_idx).astype(np.uint8)
 
